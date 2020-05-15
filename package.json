@@ -1,0 +1,22 @@
+{
+  "name": "nodejs-enzona",
+  "version": "0.0.1",
+  "description": "Enzona payment API for node js",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rdstore/nodejs-enzona.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/rdstore/nodejs-enzona/issues"
+  },
+  "homepage": "https://github.com/rdstore/nodejs-enzona#readme",
+  "dependencies": {
+    "axios": "^0.19.2"
+  }
+}
