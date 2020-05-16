@@ -10,13 +10,15 @@
     "type": "git",
     "url": "git+https://github.com/rdstore/nodejs-enzona.git"
   },
-  "author": "",
+  "author": "Daniel García Oliva",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/rdstore/nodejs-enzona/issues"
   },
   "homepage": "https://github.com/rdstore/nodejs-enzona#readme",
   "dependencies": {
-    "axios": "^0.19.2"
+    "axios": "^0.19.2",
+    "debug": "^4.1.1",
+    "qs": "^6.9.4"
   }
 }
