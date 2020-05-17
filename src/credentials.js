@@ -10,7 +10,7 @@ var config = require( appDir + '/config/enzona')
 /**
  * GET NEW ACCESS TOKEN 
 **/
-module.exports.getAccessToken = async function(acc){
+module.exports.getToken = async function(acc){
     
     return new Promise((resolve, reject) => {
 
@@ -38,7 +38,7 @@ module.exports.getAccessToken = async function(acc){
 /**
  * REFRESH ACCESS TOKEN -->>> NO WORK
 **/
-module.exports.refreshAccessToken = async function(acc, token){
+module.exports.refreshToken = async function(acc, token){
 
     return new Promise((resolve, reject) => {
 

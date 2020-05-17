@@ -2,8 +2,7 @@
 var axios = require('axios')
 
 
-module.exports.createPayment = function(acc, products, token){
-
+module.exports.create = function(products, token){
 
     return new Promise((resolve, reject) => {
 
@@ -21,28 +20,25 @@ module.exports.createPayment = function(acc, products, token){
         sendata.description = 'pagoami'
         sendata.currency = 'CUP'
 
-        sendata.ammount = {
+        sendata.amount = {
             total: total
         }
 
-        sendata.ammount.details = {
+        sendata.amount.details = {
             shipping: 0.01,
-            tax: totaltax,
-            discount: 0.00,
-            tip: 0.00
+            tax: totaltax
         }
 
         sendata.items = products
 
         sendata.merchant_op_id = 123456789123,
         sendata.invoice_number = 1212,
-        sendata.return_url = "https://mymerchant.cu/return",
-        sendata.cancel_url = "https://mymerchant.cu/cancel",
+        sendata.return_url = "http://localhost:3002/return",
+        sendata.cancel_url = "http://localhost:3002/cancel",
         sendata.terminal_id = 12121,
         sendata.buyer_identity_code = ''
 
-        console.log(sendata)
-
+        
         axios.post('https://apisandbox.enzona.net/payment/v1.0.0/payments', sendata, {
             headers: {
                 Authorization: 'Bearer ' + token
