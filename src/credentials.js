@@ -20,17 +20,24 @@ const Token = {
     **/
     get: async () => {
 
-        return new Promise((resolve, reject) => {
+        return new Promise( async (resolve, reject) => {
 
             let life = (global.eztoken.life + global.eztoken.created) - Math.floor(new Date() / 1000)
 
             if (global.eztoken.access_token === '' || life <= 0){
-                var data = qs.stringify({
-                    grant_type: 'client_credentials',
-                    scope: 'enzona_business_payment enzona_business_qr refresh_token'
-                });
+                var data = {
+                    grant_type: config.credentials.loginType,
+                    scope: config.credentials.scope
+                };
+
+                if (config.credentials.loginType === 'password'){
+                    data.username = config.credentials.username
+                    data.password = config.credentials.password
+                }
+
+
                 
-                axios.post(config.url.apiURL + '/token', data, 
+                axios.post(config.url.apiURL + '/token', qs.stringify(data), 
                 {
                     timeout: config.general.requestTimeout,
                     headers: {
@@ -42,33 +49,24 @@ const Token = {
                     global.eztoken.access_token = response.data.access_token
                     global.eztoken.created = Math.floor(new Date() / 1000)
                     global.eztoken.life = response.data.expires_in
+
+                    if (config.credentials.loginType === 'password'){
+                        global.eztoken.refresh_token = response.data.refresh_token
+                    }
                     resolve(response.data)
                 })
                 .catch(err => {
                     if (err.response === undefined){
                         reject({error: 'Destino inaccesible o problema de red'})
                     }else{
-                        reject(err.response.data.message)
+                        reject(err.response.data)
                     }
                 })
             }else{
-                if (life <= config.general.lifeToRefresh){
-                    refresh()
-                    .then( refreshResponse => {
-                        global.eztoken.access_token = refreshResponse.data.access_token
-                        global.eztoken.created = Math.floor(new Date() / 1000)
-                        global.eztoken.life = refreshResponse.data.expires_in
-                        resolve({access_token: refreshResponse.data.access_token})
-                    })
-                    .catch( refreshErr => {
-                        if (refreshErr.response === undefined){
-                            reject({error: 'Destino inaccesible o problema de red'})
-                        }else{
-                            reject(refreshErr.response.data.message)
-                        }
-                    })
+                if (config.credentials.loginType === 'password' && life <= config.general.lifeToRefresh){
+                    await Token.refresh().then( res => { resolve(res) }).catch( err => { reject(err) })
                 }else{
-                    resolve({access_token: global.eztoken.access_token, life: life})
+                    resolve({access_token: global.eztoken.access_token, refresh_token: global.eztoken.refresh_token, life: life})
                 }
             }
         }) 
@@ -78,7 +76,7 @@ const Token = {
 
     /**
      * 
-     * Actualizar token de acceso -->>> NO WORK
+     * Actualizar token de acceso
      * 
     **/
     refresh: async () => {
@@ -87,11 +85,9 @@ const Token = {
 
             var data = qs.stringify({
                 grant_type: 'refresh_token',
-                refresh_token: global.eztoken.access_token
+                refresh_token: global.eztoken.refresh_token
             })
 
-            console.log(data)
-    
             axios.post(config.url.apiURL + '/token', data, 
             {
                 timeout: config.general.requestTimeout,
@@ -101,9 +97,14 @@ const Token = {
                 }
             })
             .then( res => {
-                resolve(res)
+                global.eztoken.access_token = res.data.access_token
+                global.eztoken.created = Math.floor(new Date() / 1000)
+                global.eztoken.life = res.data.expires_in
+                global.eztoken.refresh_token = res.data.refresh_token
+                resolve(res.data)
             })
             .catch( err => {
+                console.log(err)
                 if (err.response === undefined){
                     reject({error: 'Destino inaccesible o problema de red'})
                 }else{
@@ -116,7 +117,7 @@ const Token = {
 
     /**
      * 
-     * Revocar token de acceso -->>> NO WORK
+     * Revocar token de acceso -->>> NO FUNCIONA
      * 
     **/
    revoke: () => {
@@ -125,7 +126,7 @@ const Token = {
     
             var data = qs.stringify({
                 'grant_type': 'token',
-                'refresh_token': global.eztoken.token
+                'refresh_token': global.eztoken.refresh_token
             });
     
             axios.post(config.url.apiURL + '/revoke', data, 
@@ -133,12 +134,11 @@ const Token = {
                 timeout: config.general.requestTimeout,
                 headers: {
                     'Authorization': 'Basic ' + new Buffer.from(config.credentials.apiKey + ':' + config.credentials.apiSecret).toString('base64'),
-                    'User-Agent': config.general.serviceName,
-                    'Accept': 'application/json'
+                    'User-Agent': config.general.serviceName
                 }
             })
             .then( res => {
-                resolve(res)
+                resolve(res.data)
             })
             .catch( err => {
                 if (err.response === undefined){
