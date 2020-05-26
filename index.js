@@ -1,13 +1,18 @@
-var path = require('path')
-var appDir = path.join(path.dirname(require.main.filename), '..')
-
-var EnzonaAPI = {}
-
-EnzonaAPI.config = require( appDir + '/config/enzona')
-EnzonaAPI.token = require('./src/credentials')
-EnzonaAPI.payments = require('./src/payments')
 
 
-module.exports = EnzonaAPI
+module.exports = function(config){
 
+    var EnzonaAPI = {}
 
+    EnzonaAPI.models = {}
+    EnzonaAPI.models.products = require('./src/models/products')
+    EnzonaAPI.models.paymentsQuery = require('./src/models/payments-query')
+
+    EnzonaAPI.credentials = require('./src/credentials')(config)
+    EnzonaAPI.payments = require('./src/payments')(config)
+
+    EnzonaAPI.config = config
+
+    return EnzonaAPI
+
+}
