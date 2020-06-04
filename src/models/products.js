@@ -1,59 +1,65 @@
 'use strict';
-var path = require('path')
-var appDir = path.join(path.dirname(require.main.filename), '..')
-var config = require( appDir + '/config/enzona')
 
-var model = {
-        description: config.general.paymentDescription,
-        currency: config.general.paymentDefaultCurrency,
-        amount: {
-          total: 0,
-          details: {
-            shipping: 0,
-            tax: 0,
-            discount: 0,
-            tip: 0
-          }
+module.exports = function(config){
+
+    const Products = {
+
+
+        get: () => {
+            return {
+                description: config.general.paymentDescription,
+                currency: config.general.paymentDefaultCurrency,
+                amount: {
+                total: 0,
+                details: {
+                    shipping: 0,
+                    tax: 0,
+                    discount: 0,
+                    tip: 0
+                }
+                },
+                items: [
+        
+                ],
+                merchant_op_id: 123456789123,
+                invoice_number: 1212,
+                return_url: config.url.confirmURL,
+                cancel_url: config.url.cancelURL,
+                terminal_id: 12121,
+                buyer_identity_code: ""
+            }
         },
-        items: [
 
-        ],
-        merchant_op_id: 123456789123,
-        invoice_number: 1212,
-        return_url: config.url.confirmURL,
-        cancel_url: config.url.cancelURL,
-        terminal_id: 12121,
-        buyer_identity_code: ""
-}
 
-const ProductsModel = {
+        build: (products) => {
 
-    get: () => {
-        return model
-    },
+            let total = 0
+            let totaltax = 0
 
-    build: () => {
+            products.items.map( item => {
 
-        let total = 0
-        let totalTax = 0
+                total += item.price * item.quantity
+                totaltax += item.tax
 
-        model.items.map( item => {
-            total += item.price * item.quantity
-            totalTax += item.tax
-        })
+                item.price = item.price.toFixed(2)
+                item.tax = item.tax.toFixed(2)
+            })
 
-        model.amount.total = (total + totalTax + model.amount.details.shipping + model.amount.details.tip) - model.amount.details.discount
-        model.amount.details.tax = totalTax
+            total += ((totaltax + products.amount.details.shipping + products.amount.details.tip) - products.amount.details.discount)
 
-        return model
-    },
+            products.amount.total = total.toFixed(2)
+            products.amount.details.tax = totaltax.toFixed(2)
 
-    reset: () => {
-        model.description = config.general.paymentDescription
-        model.currency = config.general.paymentDefaultCurrency
-        model.items = []
+            products.amount.details.tip =  products.amount.details.tip.toFixed(2)
+            products.amount.details.discount = products.amount.details.discount.toFixed(2)
+            products.amount.details.shipping = products.amount.details.shipping.toFixed(2)
+
+            return products
+
+        },
+    
     }
+
+    return Products
+    
 }
-
-
-module.exports = ProductsModel
